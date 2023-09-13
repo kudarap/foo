@@ -8,7 +8,7 @@ COPY go.sum .
 RUN go mod download
 
 COPY . .
-RUN make build-alpine
+RUN make build
 
 FROM alpine:3.18
 RUN apk add --no-cache ca-certificates
