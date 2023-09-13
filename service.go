@@ -2,6 +2,7 @@ package foo
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 
@@ -31,7 +32,10 @@ func (s *Service) FighterByID(ctx context.Context, sid string) (*Fighter, error)
 
 	f, err := s.repo.Fighter(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("could not find fighter on store: %s", err)
+		if errors.Is(err, ErrFighterNotFound) {
+			return nil, ErrFighterNotFound.X(err)
+		}
+		return nil, fmt.Errorf("could not find fighter on repository: %s", err)
 	}
 	return f, nil
 }

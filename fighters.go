@@ -1,12 +1,11 @@
 package foo
 
 import (
-	"errors"
-
 	guuid "github.com/google/uuid"
+	"github.com/kudarap/foo/xerror"
 )
 
-var ErrFighterNotFound = errors.New("fighter not found")
+var ErrFighterNotFound = xerror.Error("not_found")
 
 type Fighter struct {
 	ID        guuid.UUID

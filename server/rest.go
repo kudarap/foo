@@ -2,7 +2,11 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
+	"io"
 	"net/http"
+
+	"github.com/kudarap/foo/xerror"
 )
 
 const contentType = "application/json; charset=utf-8"
@@ -15,14 +19,34 @@ func encodeJSONResp(w http.ResponseWriter, data interface{}, code int) {
 	}
 }
 
-func encodeJSONError(w http.ResponseWriter, err error, code int) {
+func encodeJSONError(w http.ResponseWriter, err error, statusCode int) {
 	m := struct {
 		Error  string `json:"error"`
+		Code   string `json:"code,omitempty"`
 		Status int    `json:"status"`
-	}{err.Error(), code}
-	encodeJSONResp(w, m, code)
+	}{}
+	m.Error = err.Error()
+	m.Status = statusCode
+
+	// Custom error encoding for xerror.
+	var errX xerror.XError
+	if errors.As(err, &errX) {
+		m.Error = errX.Err.Error()
+		m.Code = errX.Code
+	}
+
+	encodeJSONResp(w, m, statusCode)
 }
 
-func decodeJSONReq(w *http.Request, in interface{}) {
-	panic("implement me")
+func decodeJSONReq(r *http.Request, in interface{}) error {
+	reqBody, err := io.ReadAll(r.Body)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(reqBody, in)
+	if err != nil {
+		return err
+	}
+	return nil
 }
