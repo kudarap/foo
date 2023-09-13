@@ -21,4 +21,4 @@ run-worker: build
 	./$(APPNAME) worker
 
 build:
-	go build -v -ldflags=$(LDFLAGS) ./cmd/$(APPNAME)
+	CGO_ENABLED=0 go build -v -ldflags=$(LDFLAGS) ./cmd/$(APPNAME)
