@@ -34,7 +34,7 @@ type Worker struct {
 // jobListener provides access to job producers.
 type jobListener interface {
 	// Listen starts subscription to topics and listen for the jobs.
-	Listen(topics []string, q chan<- Job) (stop func() error, err error)
+	Listen(topics []string, q chan<- Job, stop chan struct{}) (err error)
 }
 
 // New create new instance of worker.
@@ -63,8 +63,8 @@ func (w *Worker) Run() error {
 		tt = append(tt, t)
 	}
 
-	stopListener, err := w.listener.Listen(tt, w.queue)
-	if err != nil {
+	stopListen := make(chan struct{}, 1)
+	if err := w.listener.Listen(tt, w.queue, stopListen); err != nil {
 		return err
 	}
 
@@ -74,10 +74,14 @@ func (w *Worker) Run() error {
 		defer cancel()
 		for {
 			select {
+			// Quitting will not finish un-started job on the queue but guartees to finish
+			// processing job.
 			case <-w.quit:
 				w.logger.Info("worker quiting...")
-				w.done <- stopListener()
+				stopListen <- struct{}{}
+				w.done <- nil
 				return
+
 			case job := <-w.queue:
 				handle, ok := w.router[job.Topic]
 				if !ok {
@@ -90,10 +94,10 @@ func (w *Worker) Run() error {
 					handle = m(handle)
 				}
 
-				if err = handle(ctx, job); err != nil {
+				if err := handle(ctx, job); err != nil {
 					continue
 				}
-				if err = job.Done(); err != nil {
+				if err := job.Done(); err != nil {
 					w.logger.Error("job done", "err", err, "topic", job.Topic)
 					continue
 				}

@@ -14,8 +14,8 @@ import (
 
 	"github.com/kudarap/foo"
 	"github.com/kudarap/foo/config"
+	"github.com/kudarap/foo/fakeauthenticator"
 	"github.com/kudarap/foo/fakeproducer"
-	"github.com/kudarap/foo/firebase"
 	"github.com/kudarap/foo/logging"
 	"github.com/kudarap/foo/postgres"
 	"github.com/kudarap/foo/server"
@@ -42,15 +42,16 @@ func (a *App) Setup() error {
 	if err != nil {
 		return fmt.Errorf("could not setup postgres: %s", err)
 	}
-	firebaseClient, err := firebase.NewClient(a.config.GoogleApplicationCredentials)
+	fakeAuth, err := fakeauthenticator.NewClient(a.config.GoogleApplicationCredentials)
 	if err != nil {
 		return fmt.Errorf("could not setup firebase: %s", err)
 	}
 
-	service := telemetry.TraceFooService(foo.NewService(postgresClient, a.logger))
+	svc := foo.NewService(postgresClient, a.logger)
+	service := telemetry.TraceFooService(svc)
 
 	tsi := telemetry.NewServerInstrumentation(a.config.Telemetry.ServiceName)
-	a.server = server.New(a.config.Server, service, firebaseClient, postgresClient, tsi, a.version, a.logger)
+	a.server = server.New(a.config.Server, service, fakeAuth, postgresClient, tsi, a.version, a.logger)
 
 	fp := fakeproducer.New(time.Second)
 	a.worker = worker.New(fp, a.config.WorkerQueueSize, a.logger)

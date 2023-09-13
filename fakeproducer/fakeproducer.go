@@ -16,27 +16,20 @@ func New(sleep time.Duration) *Job {
 	return &Job{sleep}
 }
 
-func (j *Job) Listen(topics []string, q chan<- worker.Job) (stop func() error, err error) {
+func (j *Job) Listen(topics []string, q chan<- worker.Job, stop chan struct{}) error {
 	log.Println("fake subscribed to", topics)
-
-	quit := make(chan struct{}, 1)
-	done := make(chan error, 1)
-	stop = func() error {
-		quit <- struct{}{}
-		return <-done
-	}
 
 	go func() {
 		var i int
 		for {
 			select {
-			case <-quit:
+			case <-stop:
 				log.Println("listener stopped")
-				done <- nil // place error here
 				return
 
 			default:
 				i++
+				log.Println("fake producing job...", i)
 				q <- worker.Job{
 					Topic:   "demo",
 					Payload: []byte(fmt.Sprintf(`{"faker": %d}`, i)),
@@ -50,7 +43,8 @@ func (j *Job) Listen(topics []string, q chan<- worker.Job) (stop func() error, e
 			}
 		}
 	}()
-	return
+
+	return nil
 }
 
 func (j *Job) Close() error {
