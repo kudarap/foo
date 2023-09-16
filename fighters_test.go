@@ -15,7 +15,7 @@ func TestService_FighterByID(t *testing.T) {
 	tests := []struct {
 		name string
 		// dependencies
-		repo *mockFighterRepo
+		repo *mockRepo
 		// params
 		fighterUUID string
 		// returns
@@ -25,7 +25,7 @@ func TestService_FighterByID(t *testing.T) {
 		// TODO: Add test cases.
 		{
 			"place-holder-test",
-			&mockFighterRepo{
+			&mockRepo{
 				FighterFn: func(ctx context.Context, id uuid.UUID) (*foo.Fighter, error) {
 					return &foo.Fighter{
 						ID:        uuid.MustParse("b41c7709-04e3-4c48-b233-34e6838d9140"),
@@ -62,10 +62,20 @@ func TestService_FighterByID(t *testing.T) {
 	}
 }
 
-type mockFighterRepo struct {
+type mockRepo struct {
 	FighterFn func(ctx context.Context, id uuid.UUID) (*foo.Fighter, error)
+	ArcherFn  func(ctx context.Context, id uuid.UUID) (*foo.Archer, error)
 }
 
-func (m *mockFighterRepo) Fighter(ctx context.Context, id uuid.UUID) (*foo.Fighter, error) {
+type mockArcherRepo struct {
+	ArcherFn func(ctx context.Context, id uuid.UUID) (*foo.Archer, error)
+}
+
+// Archer implements foo.repository.
+func (m *mockRepo) Archer(ctx context.Context, id uuid.UUID) (*foo.Archer, error) {
+	return m.ArcherFn(ctx, id)
+}
+
+func (m *mockRepo) Fighter(ctx context.Context, id uuid.UUID) (*foo.Fighter, error) {
 	return m.FighterFn(ctx, id)
 }
