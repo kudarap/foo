@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/handlers"
 )
 
 // Key to use when setting the request id.
@@ -99,4 +100,14 @@ func requestIDMiddleware(next http.Handler) http.Handler {
 		ctx := context.WithValue(r.Context(), requestIDKey, rid)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+func setCORSMiddleware(next http.Handler) http.Handler {
+	cors := handlers.CORS(
+		handlers.AllowedHeaders([]string{"*"}),
+		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"}),
+		handlers.AllowedOrigins([]string{"*"}), // Allow requests from any origin
+	)
+
+	return cors(next)
 }

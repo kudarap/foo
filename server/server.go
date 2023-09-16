@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -65,6 +66,13 @@ func New(
 
 // Routes setups middlewares and route endpoints.
 func (s *Server) Routes() http.Handler {
+	// Add CORS middleware here
+	cors := handlers.CORS(
+		handlers.AllowedHeaders([]string{"*"}),
+		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"}),
+		handlers.AllowedOrigins([]string{"*"}), // Allow requests from any origin
+	)
+
 	r := mux.NewRouter()
 	r.Use(
 		s.tracing.Middleware(),
@@ -72,6 +80,7 @@ func (s *Server) Routes() http.Handler {
 		requestIDMiddleware,
 		s.loggingMiddleware,
 		s.recoveryMiddleware,
+		cors,
 	)
 
 	// Public endpoints
