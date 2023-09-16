@@ -78,6 +78,7 @@ func (s *Server) Routes() http.Handler {
 	r.HandleFunc("/version", GetVersion(s.Version)).Methods(http.MethodGet)
 	r.HandleFunc("/healthcheck", Healthcheck(s.databaseChecker)).Methods(http.MethodGet)
 	r.HandleFunc("/fighters/{id}", GetFighterByID(s.service)).Methods(http.MethodGet)
+	r.HandleFunc("/archers/{id}", GetArcherByID(s.service)).Methods(http.MethodGet)
 	r.NotFoundHandler = s.noMatchHandler(http.StatusNotFound)
 	r.MethodNotAllowedHandler = s.noMatchHandler(http.StatusMethodNotAllowed)
 

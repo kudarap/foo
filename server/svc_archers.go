@@ -6,7 +6,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func GetArchersByID(s service) http.HandlerFunc {
+func GetArcherByID(s service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := mux.Vars(r)
 		c, err := s.ArcherByID(r.Context(), v["id"])

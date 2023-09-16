@@ -13,7 +13,7 @@ func (c *Client) Fighter(ctx context.Context, id uuid.UUID) (*foo.Fighter, error
 	var fighter foo.Fighter
 	fighter.ID = id
 	err := c.db.
-		QueryRow(ctx, `SELECT id, first_name, last_name FROM fighters WHERE uuid=$1`, id.String()).
+		QueryRow(ctx, `SELECT id, first_name, last_name FROM fighters WHERE id=$1`, id.String()).
 		Scan(&fighter.ID, &fighter.FirstName, &fighter.LastName)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
