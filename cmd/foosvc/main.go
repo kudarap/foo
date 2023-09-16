@@ -29,9 +29,13 @@ const (
 )
 
 type App struct {
-	config   *config.Config
-	server   *server.Server
-	worker   *worker.Worker
+	// config possibly nil
+	config *config.Config
+	// pretty big
+	server *server.Server
+	//  obviously we dont want to duplicate workers
+	worker *worker.Worker
+	// pretty big
 	logger   *slog.Logger
 	version  server.Version
 	closerFn func() error

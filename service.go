@@ -40,7 +40,28 @@ func (s *Service) FighterByID(ctx context.Context, sid string) (*Fighter, error)
 	return f, nil
 }
 
+// FighterByID returns a fighter by id.
+func (s *Service) ArcherByID(ctx context.Context, sid string) (*Archer, error) {
+	// NOTE this is a just a demo logging and should use InfoContext enabling telemetry logs.
+	s.logger.InfoContext(ctx, "getting foo fighter by id", "id", sid)
+
+	id, err := uuid.Parse(sid)
+	if err != nil {
+		return nil, err
+	}
+
+	a, err := s.repo.Archer(ctx, id)
+	if err != nil {
+		if errors.Is(err, ErrArcherNotFound) {
+			return nil, ErrArcherNotFound.X(err)
+		}
+		return nil, fmt.Errorf("could not find fighter on repository: %s", err)
+	}
+	return a, nil
+}
+
 // repository manages storage operation for fighters.
 type repository interface {
 	Fighter(ctx context.Context, id uuid.UUID) (*Fighter, error)
+	Archer(ctx context.Context, id uuid.UUID) (*Archer, error)
 }

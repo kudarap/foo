@@ -1,22 +1,15 @@
 package server
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/kudarap/foo"
 )
 
-type service interface {
-	FighterByID(ctx context.Context, id string) (*foo.Fighter, error)
-	ArcherByID(ctx context.Context, id string) (*foo.Archer, error)
-}
-
-func GetFighterByID(s service) http.HandlerFunc {
+func GetArcherByID(s service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := mux.Vars(r)
-		c, err := s.FighterByID(r.Context(), v["id"])
+		c, err := s.ArcherByID(r.Context(), v["id"])
 		if err != nil {
 			encodeJSONError(w, err, http.StatusBadRequest)
 			return
@@ -26,7 +19,7 @@ func GetFighterByID(s service) http.HandlerFunc {
 	}
 }
 
-func ListFighters(s service) http.HandlerFunc {
+func ListArchers(s service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		encodeJSONResp(w, struct {
 			Msg string `json:"message"`
